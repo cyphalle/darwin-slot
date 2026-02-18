@@ -171,18 +171,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "darwin-slot"
-version = "0.1.0"
-dependencies = [
- "clap",
- "colored",
- "dialoguer",
- "serde",
- "tabled",
- "toml",
-]
-
-[[package]]
 name = "dialoguer"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -193,6 +181,18 @@ dependencies = [
  "tempfile",
  "thiserror",
  "zeroize",
+]
+
+[[package]]
+name = "dslot"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "colored",
+ "dialoguer",
+ "serde",
+ "tabled",
+ "toml",
 ]
 
 [[package]]

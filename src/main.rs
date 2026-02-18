@@ -4,11 +4,12 @@ mod git;
 
 use clap::{Parser, Subcommand};
 use dialoguer::Select;
+use std::ffi::OsString;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
 
 #[derive(Parser)]
-#[command(name = "darwin-slot", about = "Gérer les slots Darwin")]
+#[command(name = "dslot", about = "Gérer les slots Darwin")]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -16,16 +17,14 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Rejoindre un slot et lancer claude
-    Go {
-        /// Nom du slot (ex: local-1, proto-2)
-        slot: Option<String>,
-    },
     /// Libérer un slot (checkout develop + pull)
     Free {
         /// Nom du slot (ex: local-1, proto-2)
         slot: Option<String>,
     },
+    /// Rejoindre un slot et lancer claude
+    #[command(external_subcommand)]
+    Go(Vec<OsString>),
 }
 
 fn main() {
@@ -36,8 +35,9 @@ fn main() {
         None => {
             display::print_status(&config.slots);
         }
-        Some(Commands::Go { slot }) => {
-            go_to_slot(&config, slot);
+        Some(Commands::Go(args)) => {
+            let slot_name = args.into_iter().next().map(|s| s.into_string().unwrap());
+            go_to_slot(&config, slot_name);
         }
         Some(Commands::Free { slot }) => {
             free_slot(&config, slot);
@@ -91,7 +91,10 @@ fn go_to_slot(config: &config::Config, slot_name: Option<String>) {
 
     println!("→ {} ({})", slot.name, slot.path);
 
-    let err = Command::new("claude").current_dir(&slot.path).exec();
+    let err = Command::new("claude")
+        .arg("--dangerously-skip-permissions")
+        .current_dir(&slot.path)
+        .exec();
     eprintln!("Erreur au lancement de claude: {}", err);
     std::process::exit(1);
 }
