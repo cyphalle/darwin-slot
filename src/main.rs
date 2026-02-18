@@ -33,7 +33,7 @@ fn main() {
 
     match cli.command {
         None => {
-            display::print_status(&config.slots);
+            go_to_slot(&config, None);
         }
         Some(Commands::Go(args)) => {
             let slot_name = args.into_iter().next().map(|s| s.into_string().unwrap());
@@ -58,34 +58,20 @@ fn go_to_slot(config: &config::Config, slot_name: Option<String>) {
                 })
         }
         None => {
-            let free_slots: Vec<&config::SlotConfig> = config
+            let labels: Vec<String> = config
                 .slots
                 .iter()
-                .filter(|s| {
-                    git::get_status(&s.path)
-                        .map(|st| st.is_available())
-                        .unwrap_or(false)
-                })
-                .collect();
-
-            if free_slots.is_empty() {
-                eprintln!("Aucun slot libre (develop + clean)");
-                std::process::exit(1);
-            }
-
-            let labels: Vec<String> = free_slots
-                .iter()
-                .map(|s| format!("{} ({})", s.name, s.slot_type))
+                .map(|s| display::slot_label(s))
                 .collect();
 
             let selection = Select::new()
-                .with_prompt("Quel slot rejoindre ?")
+                .with_prompt("Slot")
                 .items(&labels)
                 .default(0)
                 .interact()
                 .unwrap_or_else(|_| std::process::exit(0));
 
-            free_slots[selection]
+            &config.slots[selection]
         }
     };
 
