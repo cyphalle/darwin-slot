@@ -8,19 +8,17 @@ pub fn slot_label(slot: &SlotConfig) -> String {
     let stype = format!("{:<6}", slot.slot_type);
 
     if let Some(status) = git::get_status(&slot.path) {
-        let branch = format!("{:<20}", status.branch);
-        let git_text = if status.is_clean() {
-            "clean".green().to_string()
-        } else {
-            status.status_text().yellow().to_string()
-        };
-
         if status.is_available() {
-            format!("{} {} {} {}", name, stype.dimmed(), branch.dimmed(), git_text)
+            format!("{} {}  {}", name.dimmed(), stype.dimmed(), "libre".green())
         } else {
-            format!("{} {} {} {}", name.bold(), stype, branch.cyan(), git_text)
+            let detail = if status.is_clean() {
+                status.branch.cyan().to_string()
+            } else {
+                format!("{}  {}", status.branch.cyan(), status.status_text().yellow())
+            };
+            format!("{} {}  {}", name.bold(), stype, detail)
         }
     } else {
-        format!("{} {} {}", name, stype.dimmed(), "introuvable".red())
+        format!("{} {}  {}", name, stype.dimmed(), "introuvable".red())
     }
 }
